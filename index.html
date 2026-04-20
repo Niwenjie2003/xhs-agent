@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小红书内容策划 Agent</title>
+  <style>
+    :root {
+      --red: #ff2442;
+      --red-light: #ff6b81;
+      --red-pale: #fff0f2;
+      --pink: #ffb8c6;
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: #888;
+      --border: #f0e0e3;
+      --shadow: 0 4px 24px rgba(255,36,66,0.08);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ─── Header ─── */
+    header {
+      background: linear-gradient(135deg, #ff2442 0%, #ff6b81 100%);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(255,36,66,0.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .header-badge {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    /* ─── Layout ─── */
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ─── Input Panel ─── */
+    .input-panel {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .panel-header {
+      background: linear-gradient(135deg, #fff0f2 0%, #ffe4ea 100%);
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-header h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .panel-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .form-group label span {
+      color: var(--red);
+    }
+
+    textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 90px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      color: var(--text);
+      background: #fafafa;
+    }
+    textarea:focus {
+      border-color: var(--red-light);
+      box-shadow: 0 0 0 3px rgba(255,36,66,0.08);
+      background: #fff;
+    }
+    textarea::placeholder { color: #bbb; }
+
+    /* Tags selector */
+    .tag-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag-option {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fff;
+      color: var(--text-muted);
+      user-select: none;
+    }
+    .tag-option:hover { border-color: var(--red-light); color: var(--red); }
+    .tag-option.active {
+      background: var(--red-pale);
+      border-color: var(--red);
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    /* Slider */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    input[type=range] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      background: linear-gradient(to right, var(--red) 0%, var(--red) var(--val, 60%), #e8e8e8 var(--val, 60%), #e8e8e8 100%);
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 2px 6px rgba(255,36,66,0.4);
+      cursor: pointer;
+    }
+    .slider-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--red);
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* Generate Button */
+    .btn-generate {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #ff2442 0%, #ff6b81 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 14px rgba(255,36,66,0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-generate:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255,36,66,0.45);
+    }
+    .btn-generate:active:not(:disabled) { transform: translateY(0); }
+    .btn-generate:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .btn-generate .btn-shine {
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      transform: skewX(-20deg);
+      animation: shine 2.5s infinite;
+    }
+    @keyframes shine {
+      0% { left: -100%; }
+      40% { left: 120%; }
+      100% { left: 120%; }
+    }
+
+    /* ─── Output Panel ─── */
+    .output-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ─── Agent Steps ─── */
+    .steps-track {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .steps-header {
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #fff0f2, #ffe4ea);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .steps-header h3 { font-size: 15px; font-weight: 700; color: var(--red); }
+    .steps-header .step-count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .steps-list {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1.5px solid transparent;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .step-item.idle {
+      background: #fafafa;
+      border-color: #f0f0f0;
+    }
+    .step-item.running {
+      background: #fff8f0;
+      border-color: #ffd08a;
+    }
+    .step-item.done {
+      background: #f0fff4;
+      border-color: #86efac;
+    }
+    .step-item.error {
+      background: #fff0f0;
+      border-color: #fca5a5;
+    }
+
+    .step-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .step-item.idle .step-icon { background: #f0f0f0; }
+    .step-item.running .step-icon {
+      background: linear-gradient(135deg, #ffd08a, #ffb347);
+      animation: pulse-icon 1.2s ease-in-out infinite;
+    }
+    .step-item.done .step-icon { background: linear-gradient(135deg, #86efac, #4ade80); }
+    @keyframes pulse-icon {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,180,71,0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(255,180,71,0); }
+    }
+
+    .step-content { flex: 1; min-width: 0; }
+    .step-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-status-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .idle .step-status-badge { background: #e8e8e8; color: #888; }
+    .running .step-status-badge { background: #ffd08a; color: #a05c00; }
+    .done .step-status-badge { background: #dcfce7; color: #15803d; }
+
+    .step-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .step-progress-bar {
+      margin-top: 8px;
+      height: 4px;
+      background: #e8e8e8;
+      border-radius: 4px;
+      overflow: hidden;
+      display: none;
+    }
+    .step-item.running .step-progress-bar { display: block; }
+    .step-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ffd08a, #ff8c42);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* typing text */
+    .step-output {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #555;
+      line-height: 1.6;
+      display: none;
+      background: rgba(255,255,255,0.7);
+      padding: 8px 10px;
+      border-radius: 8px;
+      border-left: 3px solid #4ade80;
+    }
+    .step-item.done .step-output { display: block; }
+
+    /* ─── Result Card ─── */
+    .result-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: none;
+    }
+    .result-card.visible { display: block; }
+
+    .result-header {
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #fff0f2, #ffe4ea);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .result-header h3 { font-size: 15px; font-weight: 700; color: var(--red); flex: 1; }
+
+    .copy-btn {
+      padding: 6px 14px;
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { opacity: 0.85; }
+
+    .result-body {
+      padding: 24px;
+    }
+
+    .result-title-section {
+      margin-bottom: 20px;
+    }
+    .result-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-title-text {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .result-divider {
+      height: 1px;
+      background: linear-gradient(90deg, var(--red-pale), transparent);
+      margin: 16px 0;
+    }
+
+    .result-content-text {
+      font-size: 15px;
+      line-height: 1.9;
+      color: #333;
+      white-space: pre-wrap;
+    }
+
+    .result-tags {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .result-tag {
+      padding: 5px 12px;
+      background: var(--red-pale);
+      color: var(--red);
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--pink);
+    }
+
+    /* QC Section */
+    .qc-section {
+      margin-top: 20px;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #f0fff4, #dcfce7);
+      border-radius: 12px;
+      border: 1px solid #86efac;
+    }
+    .qc-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #15803d;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .qc-scores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .qc-score-item {
+      text-align: center;
+    }
+    .qc-score-label {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .qc-score-bar {
+      height: 6px;
+      background: #c3f7d4;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .qc-score-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4ade80, #22c55e);
+      border-radius: 4px;
+      transition: width 1s ease;
+    }
+    .qc-score-num {
+      font-size: 13px;
+      font-weight: 700;
+      color: #15803d;
+    }
+
+    /* ─── Empty State ─── */
+    .empty-state {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 60px 40px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .empty-state .empty-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    .empty-state h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #aaa; }
+    .empty-state p { font-size: 13px; line-height: 1.7; }
+
+    /* ─── Title options ─── */
+    .title-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .title-option-btn {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .title-option-btn:hover { border-color: var(--red-light); background: var(--red-pale); }
+    .title-option-btn.selected {
+      border-color: var(--red);
+      background: var(--red-pale);
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,36,66,0.2);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Typewriter cursor */
+    .typing::after {
+      content: '|';
+      animation: blink 0.7s step-start infinite;
+      color: var(--red);
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Fade in */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeInUp 0.4s ease both; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .app { grid-template-columns: 1fr; }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1a1a1a;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-size: 14px;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Regenerate */
+    .regen-btn {
+      padding: 6px 14px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .regen-btn:hover { border-color: var(--red-light); color: var(--red); }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">📖</div>
+    小红书内容策划 Agent
+  </div>
+  <span class="header-badge">✨ AI 驱动 · 多步规划</span>
+</header>
+
+<!-- Main App -->
+<div class="app">
+
+  <!-- Left: Input Panel -->
+  <div class="input-panel">
+    <div class="panel-header">
+      <h2>📝 内容创作配置</h2>
+      <p>告诉 Agent 你想写什么，它会自动完成策划</p>
+    </div>
+    <div class="panel-body">
+
+      <!-- 主题 -->
+      <div class="form-group">
+        <label>创作主题 <span>*</span></label>
+        <textarea id="topicInput" placeholder="例如：秋冬护肤保湿攻略、在家做健康早餐、北京周末打卡好去处…" rows="3"></textarea>
+      </div>
+
+      <!-- 目标人群 -->
+      <div class="form-group">
+        <label>目标人群</label>
+        <div class="tag-group" id="audienceGroup">
+          <span class="tag-option active" data-val="学生党">🎓 学生党</span>
+          <span class="tag-option" data-val="职场白领">💼 职场白领</span>
+          <span class="tag-option" data-val="宝妈">👶 宝妈</span>
+          <span class="tag-option" data-val="美妆达人">💄 美妆达人</span>
+          <span class="tag-option" data-val="健身爱好者">🏋️ 健身爱好者</span>
+          <span class="tag-option" data-val="数码极客">📱 数码极客</span>
+        </div>
+      </div>
+
+      <!-- 内容风格 -->
+      <div class="form-group">
+        <label>内容风格</label>
+        <div class="tag-group" id="styleGroup">
+          <span class="tag-option active" data-val="真实分享">🌸 真实分享</span>
+          <span class="tag-option" data-val="干货教程">📚 干货教程</span>
+          <span class="tag-option" data-val="种草推荐">🛍️ 种草推荐</span>
+          <span class="tag-option" data-val="幽默日常">😄 幽默日常</span>
+          <span class="tag-option" data-val="情感治愈">💕 情感治愈</span>
+        </div>
+      </div>
+
+      <!-- 字数要求 -->
+      <div class="form-group">
+        <label>正文字数目标</label>
+        <div class="slider-row">
+          <input type="range" id="wordCount" min="200" max="1000" value="500" step="50"
+            oninput="updateSlider(this)" style="--val:30%">
+          <span class="slider-val" id="wordCountVal">500 字</span>
+        </div>
+      </div>
+
+      <!-- 自检优化 -->
+      <div class="form-group">
+        <label>智能自检优化</label>
+        <div class="tag-group" id="qcGroup">
+          <span class="tag-option active" data-val="降低广告感">🚫 降低广告感</span>
+          <span class="tag-option active" data-val="提升真实感">✅ 提升真实感</span>
+          <span class="tag-option active" data-val="平台适配">📱 平台适配</span>
+          <span class="tag-option" data-val="增加互动引导">💬 增加互动引导</span>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="generateBtn" onclick="startGeneration()">
+        <span class="btn-shine"></span>
+        🚀 开始 AI 内容策划
+      </button>
+    </div>
+  </div>
+
+  <!-- Right: Output Panel -->
+  <div class="output-panel" id="outputPanel">
+
+    <!-- Steps Track -->
+    <div class="steps-track" id="stepsTrack">
+      <div class="steps-header">
+        <span>🤖</span>
+        <h3>Agent 执行进度</h3>
+        <span class="step-count" id="stepCountText">等待启动…</span>
+      </div>
+      <div class="steps-list" id="stepsList">
+        <!-- Steps will be rendered here -->
+      </div>
+    </div>
+
+    <!-- Result Card -->
+    <div class="result-card" id="resultCard">
+      <div class="result-header">
+        <span>✨</span>
+        <h3>生成结果</h3>
+        <button class="regen-btn" onclick="startGeneration()">🔄 重新生成</button>
+        <button class="copy-btn" onclick="copyResult()">📋 复制全文</button>
+      </div>
+      <div class="result-body" id="resultBody">
+        <!-- Content rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Empty state (shown when no generation) -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">✍️</div>
+      <h3>还没有生成内容</h3>
+      <p>填写左侧配置，点击「开始 AI 内容策划」<br>Agent 将自动完成选题分析、标题生成<br>正文撰写和标签推荐等步骤</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let selectedAudiences = ['学生党'];
+let selectedStyles   = ['真实分享'];
+let selectedQC       = ['降低广告感', '提升真实感', '平台适配'];
+let isRunning = false;
+
+// ─── Tag toggle ──────────────────────────────────────────────────────────────
+function initTagGroups() {
+  document.querySelectorAll('#audienceGroup .tag-option').forEach(el => {
+    el.addEventListener('click', () => {
+      el.classList.toggle('active');
+      const val = el.dataset.val;
+      if (el.classList.contains('active')) {
+        if (!selectedAudiences.includes(val)) selectedAudiences.push(val);
+      } else {
+        selectedAudiences = selectedAudiences.filter(v => v !== val);
+      }
+    });
+  });
+
+  document.querySelectorAll('#styleGroup .tag-option').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('#styleGroup .tag-option').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+      selectedStyles = [el.dataset.val];
+    });
+  });
+
+  document.querySelectorAll('#qcGroup .tag-option').forEach(el => {
+    el.addEventListener('click', () => {
+      el.classList.toggle('active');
+      const val = el.dataset.val;
+      if (el.classList.contains('active')) {
+        if (!selectedQC.includes(val)) selectedQC.push(val);
+      } else {
+        selectedQC = selectedQC.filter(v => v !== val);
+      }
+    });
+  });
+}
+
+// ─── Slider ──────────────────────────────────────────────────────────────────
+function updateSlider(el) {
+  const min = +el.min, max = +el.max, val = +el.value;
+  const pct = ((val - min) / (max - min) * 100).toFixed(0) + '%';
+  el.style.setProperty('--val', pct);
+  document.getElementById('wordCountVal').textContent = val + ' 字';
+}
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ─── Copy ────────────────────────────────────────────────────────────────────
+function copyResult() {
+  const title = document.getElementById('finalTitle')?.textContent || '';
+  const content = document.getElementById('finalContent')?.textContent || '';
+  const tags = Array.from(document.querySelectorAll('.result-tag')).map(t => t.textContent).join(' ');
+  const text = `${title}\n\n${content}\n\n${tags}`;
+  navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制到剪贴板'));
+}
+
+// ─── Utilities ───────────────────────────────────────────────────────────────
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function typeText(el, text, speed = 18) {
+  el.textContent = '';
+  for (let i = 0; i < text.length; i++) {
+    el.textContent += text[i];
+    if (i % 4 === 0) await sleep(speed);
+  }
+}
+
+// ─── Content Generator ───────────────────────────────────────────────────────
+function buildContent(topic, audience, style, wordCount) {
+  const audienceStr = audience.join('、') || '普通用户';
+
+  // Topic analysis snippets
+  const analysisMap = {
+    '护肤': '当下护肤内容热度持续走高，"保湿""敏感肌""成分党"等关键词搜索量月增35%，秋冬时节尤为突出。',
+    '早餐': '健康饮食赛道竞争激烈但受众广泛，"低卡""高蛋白""快手"是高频搜索词，早餐类笔记互动率均值比其他高18%。',
+    '打卡': '本地探店类内容持续火爆，"周末去哪""小众宝藏"标签流量旺盛，配合真实图文转化效果显著。',
+    'default': `"${topic}"相关内容在小红书搜索热度上升，${audienceStr}群体对此话题参与度较高，具备持续产出价值。`
+  };
+
+  let analysisKey = 'default';
+  if (topic.includes('护肤') || topic.includes('护') || topic.includes('美妆') || topic.includes('肤')) analysisKey = '护肤';
+  else if (topic.includes('早餐') || topic.includes('食') || topic.includes('厨') || topic.includes('菜')) analysisKey = '早餐';
+  else if (topic.includes('打卡') || topic.includes('旅') || topic.includes('景') || topic.includes('游')) analysisKey = '打卡';
+
+  const analysis = analysisMap[analysisKey];
+
+  // Title candidates
+  const titleTemplates = [
+    `✨ 不藏了！${topic}超全攻略，${audienceStr}必看`,
+    `💡 我踩过那些坑后，整理出这份${topic}宝典`,
+    `📌 ${topic}避坑指南 | 亲测有效的${selectedStyles[0]}`,
+    `🔥 ${audienceStr}的${topic}秘密，你还不知道吗？`,
+    `收藏！关于${topic}的一切，我都整理好了`,
+  ];
+
+  const titles = titleTemplates.slice(0, 3);
+
+  // Body paragraphs
+  const stylePrefix = {
+    '真实分享': `说真的，之前我也是${topic}的门外汉，踩了好多坑才总结出这套方法。今天不藏私，全都分享给大家 🙌\n\n`,
+    '干货教程': `关于${topic}，我整理了一份系统化的操作指南，建议先收藏再看，内容有点干 📚\n\n`,
+    '种草推荐': `姐妹们！今天来聊聊${topic}，这是我亲测效果超好的方案，绝对种草你们 🌸\n\n`,
+    '幽默日常': `哈哈哈没想到吧，${topic}这件事被我玩出了花样，来看看我的奇葩经历 😂\n\n`,
+    '情感治愈': `有时候，${topic}不只是一件事，更是一种生活态度。慢下来，好好感受一下 💕\n\n`,
+  }[selectedStyles[0]] || `今天来聊聊关于${topic}的那些事 ✨\n\n`;
+
+  const paragraphs = [
+    `**🌟 为什么要关注${topic}**\n${analysis}\n\n作为${audienceStr}，如果你也有这方面的困惑，这篇笔记就是为你写的！`,
+    `\n\n**📋 我的实操步骤**\n① 前期准备：先做好功课，了解基础知识，避免盲目跟风\n② 正式执行：按照以下方法一步步来，别急，慢工出细活\n③ 效果验证：隔几天对比一下效果，根据实际情况微调`,
+    `\n\n**💡 踩坑提醒**\n- 不要贪多求快，${topic}需要耐心\n- 适合别人的不一定适合你，要找到自己的节奏\n- 坚持才是关键！三天打鱼两天晒网是大忌`,
+    `\n\n**🎯 我的真实体验**\n坚持了一段时间之后，感觉变化还是挺明显的。最重要的是找到适合自己的方式，而不是一味照搬网上的方法。希望我的经历对你有所启发！`,
+    wordCount > 500 ? `\n\n**🛒 好物 / 工具推荐**\n这里我只推荐自己用过、觉得好用的，没有什么广告成分。每一样都是经过对比之后的选择，大家可以参考哦 ~` : ''
+  ];
+
+  const body = stylePrefix + paragraphs.join('');
+
+  // Tags
+  const baseTags = ['#' + topic.replace(/\s/g,''), `#${audienceStr}必看`, `#${selectedStyles[0]}`, '#小红书分享', '#生活方式'];
+  const extraTags = ['#干货收藏', '#亲测有效', '#真实体验', '#攻略分享'];
+  const tags = [...baseTags, ...extraTags.slice(0, 3)];
+
+  // QC scores (simulated)
+  const qcScores = {
+    真实感: Math.floor(Math.random() * 10) + 88,
+    平台适配: Math.floor(Math.random() * 8) + 90,
+    互动潜力: Math.floor(Math.random() * 12) + 82,
+  };
+
+  return { analysis, titles, body, tags, qcScores };
+}
+
+// ─── Main Generation Flow ─────────────────────────────────────────────────────
+const STEPS_CONFIG = [
+  { id: 'analyze', icon: '🔍', title: '选题分析', desc: '分析话题热度、竞品笔记与受众偏好' },
+  { id: 'title',   icon: '✍️', title: '标题生成', desc: '生成多个高点击率标题供选择' },
+  { id: 'body',    icon: '📝', title: '正文撰写', desc: '按风格撰写完整笔记正文' },
+  { id: 'tags',    icon: '🏷️', title: '标签推荐', desc: '匹配高流量相关话题标签' },
+  { id: 'qc',      icon: '🛡️', title: '自检优化', desc: '降低广告感，提升真实感与平台适配性' },
+];
+
+function renderSteps(states) {
+  const list = document.getElementById('stepsList');
+  list.innerHTML = STEPS_CONFIG.map((s, i) => {
+    const state = states[s.id] || 'idle';
+    const badge = { idle: '等待中', running: '执行中…', done: '完成' }[state];
+    return `
+      <div class="step-item ${state} fade-in" id="step-${s.id}" style="animation-delay:${i*0.06}s">
+        <div class="step-icon">${state === 'done' ? '✅' : s.icon}</div>
+        <div class="step-content">
+          <div class="step-title">
+            ${s.title}
+            <span class="step-status-badge">${badge}</span>
+            ${state === 'running' ? '<span class="spinner"></span>' : ''}
+          </div>
+          <div class="step-desc">${s.desc}</div>
+          <div class="step-progress-bar"><div class="step-progress-fill" id="prog-${s.id}"></div></div>
+          <div class="step-output" id="out-${s.id}"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function animateStep(id, outputHTML) {
+  const el = document.getElementById(`step-${id}`);
+  el.className = 'step-item running fade-in';
+  // inner badge update
+  el.querySelector('.step-status-badge').textContent = '执行中…';
+  el.querySelector('.step-title').innerHTML =
+    el.querySelector('.step-title').innerHTML.replace('等待中','执行中…');
+
+  // progress bar animate
+  const fill = document.getElementById(`prog-${id}`);
+  let p = 0;
+  const interval = setInterval(() => {
+    p = Math.min(p + Math.random() * 8 + 2, 90);
+    fill.style.width = p + '%';
+  }, 120);
+
+  await sleep(900 + Math.random() * 600);
+  clearInterval(interval);
+  fill.style.width = '100%';
+  await sleep(200);
+
+  el.className = 'step-item done fade-in';
+  el.querySelector('.step-icon').textContent = '✅';
+  el.querySelector('.step-status-badge').textContent = '完成';
+  el.querySelector('.step-status-badge').className = 'step-status-badge';
+
+  const out = document.getElementById(`out-${id}`);
+  out.innerHTML = outputHTML;
+  out.style.display = 'block';
+  out.classList.add('fade-in');
+}
+
+async function startGeneration() {
+  if (isRunning) return;
+
+  const topic = document.getElementById('topicInput').value.trim();
+  if (!topic) {
+    showToast('⚠️ 请先输入创作主题');
+    document.getElementById('topicInput').focus();
+    return;
+  }
+
+  isRunning = true;
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Agent 规划中…';
+
+  // Hide empty state, show steps
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('stepsTrack').style.display = 'block';
+
+  const wordCount = +document.getElementById('wordCount').value;
+  const content = buildContent(topic, selectedAudiences, selectedStyles[0], wordCount);
+
+  // Init steps as idle
+  const states = {};
+  STEPS_CONFIG.forEach(s => states[s.id] = 'idle');
+  renderSteps(states);
+  document.getElementById('stepCountText').textContent = '0 / 5 完成';
+
+  let doneCount = 0;
+
+  // ── Step 1: 选题分析 ──
+  btn.innerHTML = '<span class="spinner"></span> 分析选题中…';
+  await animateStep('analyze',
+    `<strong>热度分析完成</strong><br>${content.analysis}`
+  );
+  doneCount++;
+  document.getElementById('stepCountText').textContent = `${doneCount} / 5 完成`;
+
+  // ── Step 2: 标题生成 ──
+  btn.innerHTML = '<span class="spinner"></span> 生成标题中…';
+  await animateStep('title',
+    `<strong>生成 ${content.titles.length} 个候选标题：</strong><br>` +
+    content.titles.map((t,i) => `${i+1}. ${t}`).join('<br>')
+  );
+  doneCount++;
+  document.getElementById('stepCountText').textContent = `${doneCount} / 5 完成`;
+
+  // ── Step 3: 正文撰写 ──
+  btn.innerHTML = '<span class="spinner"></span> 撰写正文中…';
+  await animateStep('body',
+    `<strong>正文撰写完成</strong>，共约 ${wordCount} 字，风格：${selectedStyles[0]}`
+  );
+  doneCount++;
+  document.getElementById('stepCountText').textContent = `${doneCount} / 5 完成`;
+
+  // ── Step 4: 标签推荐 ──
+  btn.innerHTML = '<span class="spinner"></span> 推荐标签中…';
+  await animateStep('tags',
+    `<strong>推荐 ${content.tags.length} 个相关标签：</strong><br>` +
+    content.tags.join('  ')
+  );
+  doneCount++;
+  document.getElementById('stepCountText').textContent = `${doneCount} / 5 完成`;
+
+  // ── Step 5: 自检优化 ──
+  btn.innerHTML = '<span class="spinner"></span> 自检优化中…';
+  await animateStep('qc',
+    `<strong>优化项执行：</strong>${selectedQC.join('、')}<br>真实感 ${content.qcScores.真实感}分 · 平台适配 ${content.qcScores.平台适配}分 · 互动潜力 ${content.qcScores.互动潜力}分`
+  );
+  doneCount++;
+  document.getElementById('stepCountText').textContent = `${doneCount} / 5 完成 ✅`;
+
+  // ── Render Result ──
+  await sleep(300);
+  renderResult(content, topic);
+
+  btn.disabled = false;
+  btn.innerHTML = '<span class="btn-shine"></span> 🚀 重新生成';
+  isRunning = false;
+}
+
+// Selected title index
+let selectedTitleIdx = 0;
+let currentContent = null;
+
+function selectTitle(idx) {
+  selectedTitleIdx = idx;
+  document.querySelectorAll('.title-option-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  if (currentContent) {
+    document.getElementById('finalTitle').textContent = currentContent.titles[idx];
+  }
+}
+
+function renderResult(content, topic) {
+  currentContent = content;
+  selectedTitleIdx = 0;
+
+  const body = document.getElementById('resultBody');
+  body.innerHTML = `
+    <div class="result-title-section fade-in">
+      <div class="result-label">📌 选择标题</div>
+      <div class="title-options">
+        ${content.titles.map((t, i) => `
+          <button class="title-option-btn ${i===0?'selected':''}" onclick="selectTitle(${i})">${t}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="result-divider"></div>
+
+    <div class="fade-in" style="animation-delay:0.1s">
+      <div class="result-label">✨ 笔记正文</div>
+      <div class="result-title-text" id="finalTitle" style="margin-bottom:14px">${content.titles[0]}</div>
+      <div class="result-content-text" id="finalContent">${formatBody(content.body)}</div>
+    </div>
+
+    <div class="result-tags fade-in" style="animation-delay:0.2s" id="tagsList">
+      ${content.tags.map(t => `<span class="result-tag">${t}</span>`).join('')}
+    </div>
+
+    <div class="qc-section fade-in" style="animation-delay:0.3s">
+      <div class="qc-title">🛡️ 内容质量检测报告</div>
+      <div class="qc-scores">
+        ${Object.entries(content.qcScores).map(([k,v]) => `
+          <div class="qc-score-item">
+            <div class="qc-score-label">${k}</div>
+            <div class="qc-score-bar">
+              <div class="qc-score-fill" style="width:0%" data-target="${v}"></div>
+            </div>
+            <div class="qc-score-num">${v}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  const card = document.getElementById('resultCard');
+  card.classList.add('visible');
+  card.classList.add('fade-in');
+
+  // Animate QC bars
+  setTimeout(() => {
+    document.querySelectorAll('.qc-score-fill').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 400);
+}
+
+function formatBody(text) {
+  // Bold **text**
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+initTagGroups();
+</script>
+</body>
+</html>
