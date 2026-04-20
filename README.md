@@ -45,6 +45,50 @@ python3 -m http.server 3456
 - 零依赖，单文件部署
 - 响应式布局，支持移动端
 
+## 🔭 后续拓展方向
+
+### 接入真实 AI 大模型
+
+当前版本为 Demo 演示，内容由本地模板生成。后续可接入以下 AI 服务，实现真正的智能生成：
+
+| AI 服务 | 接入方式 | 适用场景 |
+|---------|---------|---------|
+| **OpenAI GPT-4o** | `fetch` 调用 `/v1/chat/completions` | 综合写作能力强，适合正文撰写 |
+| **Claude (Anthropic)** | `fetch` 调用 `/v1/messages` | 长文本理解好，适合自检优化 |
+| **DeepSeek** | 兼容 OpenAI 协议，直接替换 baseURL | 中文语料丰富，适合小红书风格 |
+| **通义千问 (Qwen)** | 阿里云 DashScope API | 国内访问稳定，中文表达自然 |
+| **Kimi (Moonshot)** | `fetch` 调用 `/v1/chat/completions` | 长上下文支持好，适合多轮优化 |
+| **混元 (腾讯)** | 腾讯云 API | 与微信/小红书平台生态契合 |
+
+### 接入示意（以 OpenAI 为例）
+
+```javascript
+async function callAI(prompt) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${YOUR_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      stream: true   // 流式输出，实现打字机效果
+    })
+  });
+  // 处理 SSE 流式返回...
+}
+```
+
+### 其他扩展方向
+
+- **多模型路由** — 不同子任务分配最适合的模型（如标题用 GPT，正文用 DeepSeek）
+- **流式输出** — 接入 SSE/Stream API，实现实时打字机效果
+- **历史记录** — 本地 IndexedDB 存储生成历史，支持二次编辑
+- **图片配图建议** — 结合 DALL·E / Stable Diffusion 生成封面图灵感
+- **爆款数据分析** — 接入小红书热榜 API，实时分析当日热门选题
+- **多平台适配** — 一键将内容改写为微博、公众号、抖音文案风格
+
 ## 📄 License
 
 MIT
